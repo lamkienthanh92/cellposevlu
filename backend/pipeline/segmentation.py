@@ -55,7 +55,7 @@ def resize_if_large(img, max_dim=1024):
     return img
 
 
-def segment_image(img_rgb, gray=None):
+def segment_image(img_rgb):
     """
     Runs Cellpose on a preprocessed RGB image.
     Returns (masks, valid_regions) where valid_regions is the list of
@@ -74,7 +74,7 @@ def segment_image(img_rgb, gray=None):
     )
     masks = result[0] if isinstance(result, tuple) else result
 
-    regions = measure.regionprops(masks, intensity_image=gray)
+    regions = measure.regionprops(masks)
     valid_regions = [
         r for r in regions
         if cfg.MIN_CELL_AREA_PX <= r.area <= cfg.MAX_CELL_AREA_PX

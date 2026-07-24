@@ -6,8 +6,8 @@ const GROUPS = [
   { prefix: "sv3_", title: "SV3 — Morphology & Gram classification" },
 ];
 
-function FeatureGroup({ title, entries }) {
-  const [open, setOpen] = useState(false);
+function FeatureGroup({ title, entries, defaultOpen }) {
+  const [open, setOpen] = useState(defaultOpen);
   return (
     <div className="feature-group">
       <button className="feature-group__toggle" onClick={() => setOpen(!open)}>
@@ -30,29 +30,25 @@ function FeatureGroup({ title, entries }) {
   );
 }
 
-function ImageCard({ label, src }) {
-  return (
-    <div className="image-card">
-      <span className="image-card__label">{label}</span>
-      {src ? (
-        <img src={`data:image/png;base64,${src}`} alt={label} className="image-card__img" />
-      ) : (
-        <div className="image-card__placeholder">n/a</div>
-      )}
-    </div>
-  );
+function downloadJson(data, filename) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
-function OneResult({ result }) {
-  const [open, setOpen] = useState(true);
+export default function ResultsPanel({ result, onExport, exporting }) {
+  const [showImages, setShowImages] = useState(false);
+
+  if (!result) return null;
 
   if (result.total_cells === 0) {
     return (
-      <div className="result-card">
-        <div className="result-card__header">
-          <span className="result-card__filename">{result.filename}</span>
-          <span className="results__empty">{result.message}</span>
-        </div>
+      <div className="results">
+        <p className="results__empty">{result.message}</p>
       </div>
     );
   }
@@ -66,69 +62,89 @@ function OneResult({ result }) {
   ];
 
   return (
-    <div className="result-card">
-      <button className="result-card__header" onClick={() => setOpen(!open)}>
-        <span className="result-card__filename">{result.filename}</span>
-        <span className="result-card__summary">
-          {total_cells} cells · {processing_time_seconds}s
-        </span>
-      </button>
+    <div className="results">
+      <div className="results__header">
+        <span className="results__total">{total_cells}</span>
+        <span className="results__total-label">cells detected</span>
+      </div>
 
-      {open && (
-        <div className="result-card__body">
-          <div className="image-row">
-            <ImageCard label="Original" src={images?.original} />
-            <ImageCard label="Segmented" src={images?.segmented} />
-            <ImageCard label="Gram-classified" src={images?.gram_classified} />
+      <div className="results__bars">
+        {rows.map((row) => (
+          <div className="results__row" key={row.key}>
+            <div className="results__row-label">
+              <span className={`swatch ${row.swatch}`} />
+              {row.label}
+            </div>
+            <div className="results__bar-track">
+              <div
+                className={`results__bar-fill ${row.swatch}`}
+                style={{ width: `${percentages[row.key]}%` }}
+              />
+            </div>
+            <div className="results__row-value">
+              {counts[row.key]} <span className="results__pct">({percentages[row.key]}%)</span>
+            </div>
           </div>
+        ))}
+      </div>
 
-          <div className="results__bars">
-            {rows.map((row) => (
-              <div className="results__row" key={row.key}>
-                <div className="results__row-label">
-                  <span className={`swatch ${row.swatch}`} />
-                  {row.label}
-                </div>
-                <div className="results__bar-track">
-                  <div
-                    className={`results__bar-fill ${row.swatch}`}
-                    style={{ width: `${percentages[row.key]}%` }}
-                  />
-                </div>
-                <div className="results__row-value">
-                  {counts[row.key]} <span className="results__pct">({percentages[row.key]}%)</span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {features && (
-            <div className="feature-groups">
-              <span className="feature-groups__title">
-                Full profile — {Object.keys(features).length} variables
-              </span>
-              {GROUPS.map((g) => (
-                <FeatureGroup
-                  key={g.prefix}
-                  title={g.title}
-                  entries={Object.entries(features).filter(([k]) => k.startsWith(g.prefix))}
-                />
-              ))}
+      {images && (
+        <div className="image-viewer">
+          <button className="image-viewer__toggle" onClick={() => setShowImages(!showImages)}>
+            {showImages ? "Ẩn ảnh gốc / segmentation / Gram" : "Xem ảnh gốc / segmentation / Gram"}
+          </button>
+          {showImages && (
+            <div className="image-viewer__grid">
+              <figure>
+                <img src={images.original} alt="Original" />
+                <figcaption>Ảnh gốc</figcaption>
+              </figure>
+              <figure>
+                <img src={images.segmentation} alt="Segmentation" />
+                <figcaption>Segmentation (Cellpose)</figcaption>
+              </figure>
+              <figure>
+                <img src={images.gram} alt="Gram classification" />
+                <figcaption>Gram classification</figcaption>
+              </figure>
             </div>
           )}
         </div>
       )}
-    </div>
-  );
-}
 
-export default function ResultsPanel({ results }) {
-  if (!results || results.length === 0) return null;
-  return (
-    <div className="results">
-      {results.map((r, i) => (
-        <OneResult result={r} key={r.filename + i} />
-      ))}
+      {features && (
+        <div className="feature-groups">
+          <div className="feature-groups__header">
+            <span className="feature-groups__title">
+              Full profile — {Object.keys(features).length} variables
+            </span>
+            <div className="feature-groups__actions">
+              <button className="download-btn" onClick={() => downloadJson(result, "gram_analysis_result.json")}>
+                Download JSON
+              </button>
+              <button
+                className="download-btn download-btn--excel"
+                onClick={onExport}
+                disabled={exporting}
+              >
+                {exporting ? "Đang xuất…" : "Xuất Excel (90 biến số)"}
+              </button>
+            </div>
+          </div>
+          {GROUPS.map((g) => (
+            <FeatureGroup
+              key={g.prefix}
+              title={g.title}
+              entries={Object.entries(features).filter(([k]) => k.startsWith(g.prefix))}
+              defaultOpen={false}
+            />
+          ))}
+        </div>
+      )}
+
+      <div className="results__footer">
+        Processed in {processing_time_seconds}s
+      </div>
     </div>
   );
 }
