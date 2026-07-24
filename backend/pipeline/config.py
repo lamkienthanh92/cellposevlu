@@ -11,14 +11,30 @@ _CONFIG_PATH = os.path.join(os.path.dirname(__file__), "..", "classifier_config.
 with open(_CONFIG_PATH) as f:
     _CFG = json.load(f)
 
-# --- segmentation ---
+# --- segmentation (Omnipose) ---
 SEG = _CFG["segmentation"]
-CELLPOSE_MODEL = "cyto2"
-DIAMETER_PX = SEG["diameter_px"]
-FLOW_THRESHOLD = SEG["flow_threshold"]
-CELLPROB_THRESHOLD = SEG["cellprob_threshold"]
+OMNIPOSE_MODEL_TYPE = SEG.get("model_type", "bact_phase_affinity")
+OMNIPOSE_FALLBACK_MODEL_TYPE = SEG.get("fallback_model_type", "bact_phase_omni")
 MIN_CELL_AREA_PX = SEG["min_cell_area_px"]
 MAX_CELL_AREA_PX = SEG["max_cell_area_px"]
+
+# Passed straight to cellpose_omni.models.CellposeModel.eval(). See
+# segmentation.py for why each of these is set the way it is.
+OMNI_PARAMS = dict(
+    channels=None,
+    rescale=None,
+    mask_threshold=SEG.get("mask_threshold", -2),
+    flow_threshold=SEG.get("flow_threshold", 0),
+    transparency=True,
+    omni=True,
+    cluster=True,
+    resample=True,
+    niter=None,
+    augment=False,
+    tile=False,
+    affinity_seg=True,
+    verbose=False,
+)
 
 # --- preprocessing ---
 CLAHE_CLIP_LIMIT = _CFG["preprocessing"]["clahe_clip_limit"]
@@ -37,4 +53,3 @@ RED_DARKNESS_THRESHOLD = _P["v4_red_darkness_threshold"]["value"]
 CHANNEL_GAP_THRESHOLD = _P["v5_channel_gap_threshold"]["value"]
 
 CONFIG_VERSION = _CFG.get("version", "unknown")
-KNOWN_OPEN_ITEMS = _CFG.get("known_open_items", [])

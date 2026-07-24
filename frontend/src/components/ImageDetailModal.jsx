@@ -6,12 +6,6 @@ const GROUPS = [
   { prefix: "sv3_", title: "SV3 — Morphology & Gram classification" },
 ];
 
-const TABS = [
-  { key: "original", label: "Ảnh gốc" },
-  { key: "segmentation", label: "Segmentation" },
-  { key: "gram", label: "Gram classification" },
-];
-
 function FeatureGroup({ title, entries }) {
   const [open, setOpen] = useState(false);
   return (
@@ -37,37 +31,24 @@ function FeatureGroup({ title, entries }) {
 }
 
 export default function ImageDetailModal({ result, onClose }) {
-  const [tab, setTab] = useState("original");
-  const { filename, total_cells, counts, percentages, features, images } = result;
+  const { filename, total_cells, counts, percentages, features, combined_image } = result;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal__header">
           <h2 title={filename}>{filename}</h2>
-          <button className="modal__close" onClick={onClose} aria-label="Đóng">
+          <button className="modal__close" onClick={onClose} aria-label="Close">
             ✕
           </button>
         </div>
 
-        <div className="modal__tabs">
-          {TABS.map((t) => (
-            <button
-              key={t.key}
-              className={`modal__tab ${tab === t.key ? "modal__tab--active" : ""}`}
-              onClick={() => setTab(t.key)}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-
         <div className="modal__image-wrap">
-          <img src={images[tab]} alt={tab} className="modal__image" />
+          <img src={combined_image} alt="Original, segmentation, and Gram classification" className="modal__image" />
         </div>
 
         <div className="modal__summary">
-          <span>{total_cells} tế bào</span>
+          <span>{total_cells} cells</span>
           <span className="modal__summary-item">
             <span className="swatch swatch--violet" /> Gram+ {counts.gram_positive} ({percentages.gram_positive}%)
           </span>

@@ -1,15 +1,17 @@
 """
-Builds the three overlay images the frontend shows when a person clicks
-a result: the original image, the segmentation contours, and the Gram
-classification contours (colored by vote outcome). Encoded as base64
-PNG data-URLs so the API can return them as plain JSON fields.
+Builds the single combined figure the frontend shows when a person
+clicks a result: original, segmentation contours, and Gram
+classification contours (colored by vote outcome), laid out side by
+side with labels in one PNG -- the same 3-panel layout used by the
+standalone batch scripts, just rendered with PIL instead of
+matplotlib so it can run headless inside the API request.
 """
 import base64
 import io
 
 import cv2
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 
 COLOR_SEG = (0, 220, 200)
 COLOR_GRAM_POS = (150, 100, 220)
@@ -22,14 +24,10 @@ _GRAM_COLOR_MAP = {
     "unclear": COLOR_UNCLEAR,
 }
 
-
-def encode_png_b64(img_rgb: np.ndarray) -> str:
-    """RGB numpy array -> data-URL base64 PNG string."""
-    pil_img = Image.fromarray(img_rgb.astype(np.uint8))
-    buf = io.BytesIO()
-    pil_img.save(buf, format="PNG")
-    encoded = base64.b64encode(buf.getvalue()).decode("ascii")
-    return f"data:image/png;base64,{encoded}"
+_PANEL_GAP = 12
+_LABEL_HEIGHT = 28
+_BACKGROUND = (245, 245, 245)
+_LABEL_COLOR = (30, 30, 30)
 
 
 def draw_contours(img_rgb, masks, valid_regions, labels_dict=None, color=COLOR_SEG):
@@ -51,15 +49,36 @@ def draw_contours(img_rgb, masks, valid_regions, labels_dict=None, color=COLOR_S
     return overlay
 
 
-def build_result_images(img_rgb, masks, valid_regions, cell_labels):
+def build_combined_figure(img_rgb, masks, valid_regions, cell_labels):
     """
-    Returns {"original": ..., "segmentation": ..., "gram": ...} where
-    each value is a base64 PNG data-URL ready to drop into an <img src>.
+    Renders Original | Segmentation | Gram Classification as one
+    labeled, side-by-side PNG and returns it as a base64 data URL.
     """
     seg_overlay = draw_contours(img_rgb, masks, valid_regions)
     gram_overlay = draw_contours(img_rgb, masks, valid_regions, labels_dict=cell_labels)
-    return {
-        "original": encode_png_b64(img_rgb),
-        "segmentation": encode_png_b64(seg_overlay),
-        "gram": encode_png_b64(gram_overlay),
-    }
+
+    panels = [
+        ("Original", img_rgb),
+        ("Segmentation (Omnipose)", seg_overlay),
+        ("Gram Classification", gram_overlay),
+    ]
+
+    h, w = img_rgb.shape[:2]
+    canvas_w = w * len(panels) + _PANEL_GAP * (len(panels) - 1)
+    canvas_h = h + _LABEL_HEIGHT
+
+    canvas = Image.new("RGB", (canvas_w, canvas_h), _BACKGROUND)
+    draw = ImageDraw.Draw(canvas)
+    font = ImageFont.load_default()
+
+    for i, (label, panel_img) in enumerate(panels):
+        x = i * (w + _PANEL_GAP)
+        canvas.paste(Image.fromarray(panel_img.astype(np.uint8)), (x, _LABEL_HEIGHT))
+        text_bbox = draw.textbbox((0, 0), label, font=font)
+        text_w = text_bbox[2] - text_bbox[0]
+        draw.text((x + max(0, (w - text_w) // 2), 6), label, fill=_LABEL_COLOR, font=font)
+
+    buf = io.BytesIO()
+    canvas.save(buf, format="PNG")
+    encoded = base64.b64encode(buf.getvalue()).decode("ascii")
+    return f"data:image/png;base64,{encoded}"

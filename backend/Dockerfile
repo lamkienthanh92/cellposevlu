@@ -1,9 +1,13 @@
 FROM python:3.10-slim
 
-# OpenCV needs these system libs
+# OpenCV needs these system libs; build-essential covers compiling
+# numba/llvmlite (Omnipose dependencies) if no prebuilt wheel matches
+# this platform.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libgl1 \
     libglib2.0-0 \
+    libgomp1 \
+    build-essential \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

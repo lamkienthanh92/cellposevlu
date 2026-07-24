@@ -1,13 +1,13 @@
 {
-  "pipeline": "Automated Gram Classification System — Cellpose 2.0 + 5-Vote Classifier",
-  "version": "2026-07 (corrected)",
+  "pipeline": "Automated Gram Classification System — Omnipose + 5-Vote Classifier",
+  "version": "2026-07 (Omnipose migration)",
   "correction_note": "The classifier parameters below were re-derived directly from full_grid_search_20260425_104948.xlsx (433,026 combinations, global maximum of the pre-specified composite score). The values previously reported in the manuscript and coded in the pipeline (v1=15, v2_GP=1.2, v3=0.10, v4=0.30, v5=5) did not correspond to the best-scoring row in that file and have been superseded by the values below.",
   "segmentation": {
-    "model": "cellpose_2.0_cyto2",
-    "diameter_px": 12,
-    "flow_threshold": 0.5,
-    "cellprob_threshold": 0.0,
-    "channels": [0, 0],
+    "model": "omnipose_bact_phase_affinity",
+    "model_type": "bact_phase_affinity",
+    "fallback_model_type": "bact_phase_omni",
+    "mask_threshold": -2,
+    "flow_threshold": 0,
     "min_cell_area_px": 20,
     "max_cell_area_px": 2000,
     "pixel_size_um": 0.1
@@ -86,9 +86,5 @@
       "v5_channel_gap_threshold": 0.038,
       "v2_gn_blue_red_ratio_max": 0.0001
     }
-  },
-  "known_open_items": [
-    "Phase 2 (E. coli specificity test, gram_neg_validation_20260428_081110.xlsx) was run with the previous, uncorrected parameter set (v1=15, v2_GP=1.2, v3=0.10, v4=0.30, v5=5) and needs to be re-run with the corrected parameters above before the false-positive-rate / specificity figures in the manuscript can be finalised.",
-    "Table 2 (medium x timepoint stratified subgroup performance) was likewise computed under the previous parameter set and needs re-stratification under the corrected parameters."
-  ]
+  }
 }

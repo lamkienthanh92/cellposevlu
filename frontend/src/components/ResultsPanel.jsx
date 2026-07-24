@@ -41,7 +41,7 @@ function downloadJson(data, filename) {
 }
 
 export default function ResultsPanel({ result, onExport, exporting }) {
-  const [showImages, setShowImages] = useState(false);
+  const [showImage, setShowImage] = useState(false);
 
   if (!result) return null;
 
@@ -53,7 +53,7 @@ export default function ResultsPanel({ result, onExport, exporting }) {
     );
   }
 
-  const { counts, percentages, total_cells, processing_time_seconds, features, images } = result;
+  const { counts, percentages, total_cells, processing_time_seconds, features, combined_image } = result;
 
   const rows = [
     { key: "gram_positive", label: "Gram-positive", swatch: "swatch--violet" },
@@ -88,25 +88,14 @@ export default function ResultsPanel({ result, onExport, exporting }) {
         ))}
       </div>
 
-      {images && (
+      {combined_image && (
         <div className="image-viewer">
-          <button className="image-viewer__toggle" onClick={() => setShowImages(!showImages)}>
-            {showImages ? "Ẩn ảnh gốc / segmentation / Gram" : "Xem ảnh gốc / segmentation / Gram"}
+          <button className="image-viewer__toggle" onClick={() => setShowImage(!showImage)}>
+            {showImage ? "Hide original / segmentation / Gram figure" : "View original / segmentation / Gram figure"}
           </button>
-          {showImages && (
-            <div className="image-viewer__grid">
-              <figure>
-                <img src={images.original} alt="Original" />
-                <figcaption>Ảnh gốc</figcaption>
-              </figure>
-              <figure>
-                <img src={images.segmentation} alt="Segmentation" />
-                <figcaption>Segmentation (Cellpose)</figcaption>
-              </figure>
-              <figure>
-                <img src={images.gram} alt="Gram classification" />
-                <figcaption>Gram classification</figcaption>
-              </figure>
+          {showImage && (
+            <div className="image-viewer__figure">
+              <img src={combined_image} alt="Original, segmentation, and Gram classification" />
             </div>
           )}
         </div>
@@ -127,7 +116,7 @@ export default function ResultsPanel({ result, onExport, exporting }) {
                 onClick={onExport}
                 disabled={exporting}
               >
-                {exporting ? "Đang xuất…" : "Xuất Excel (90 biến số)"}
+                {exporting ? "Exporting…" : "Export Excel (90 variables)"}
               </button>
             </div>
           </div>

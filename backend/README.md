@@ -11,8 +11,8 @@ pinned: false
 # Gram Stain Classifier — API
 
 FastAPI backend for the Automated Gram Classification System
-(Cellpose 2.0 + 5-vote classifier). Deployed here as a Hugging Face
-Space using the Docker SDK.
+(Omnipose segmentation + 5-vote classifier). Deployed here as a
+Hugging Face Space using the Docker SDK.
 
 - `GET /` — health check, also returns the currently loaded
   classifier config version and any open validation caveats.

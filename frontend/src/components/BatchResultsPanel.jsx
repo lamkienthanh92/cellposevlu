@@ -8,14 +8,14 @@ export default function BatchResultsPanel({ batchResults, onSelect, onExport, ex
       <div className="batch-results__header">
         <div>
           <span className="results__total">{count}</span>
-          <span className="results__total-label"> ảnh · {totalCells} tế bào</span>
+          <span className="results__total-label"> images · {totalCells} cells</span>
         </div>
         <button
           className="download-btn download-btn--excel"
           onClick={onExport}
           disabled={exporting || withCells.length === 0}
         >
-          {exporting ? "Đang xuất…" : `Xuất Excel (90 biến số × ${withCells.length} ảnh)`}
+          {exporting ? "Exporting…" : `Export Excel (90 variables × ${withCells.length} images)`}
         </button>
       </div>
 
@@ -28,8 +28,8 @@ export default function BatchResultsPanel({ batchResults, onSelect, onExport, ex
             onClick={() => r.total_cells > 0 && onSelect(r)}
             disabled={r.total_cells === 0}
           >
-            {r.images ? (
-              <img src={r.images.original} alt={r.filename} className="batch-card__thumb" />
+            {r.combined_image ? (
+              <img src={r.combined_image} alt={r.filename} className="batch-card__thumb" />
             ) : (
               <div className="batch-card__thumb batch-card__thumb--empty" />
             )}
@@ -43,7 +43,7 @@ export default function BatchResultsPanel({ batchResults, onSelect, onExport, ex
                 <span className="swatch swatch--neutral" /> {r.counts.unclear}
               </div>
             ) : (
-              <div className="batch-card__empty">Không phát hiện tế bào</div>
+              <div className="batch-card__empty">No cells detected</div>
             )}
           </button>
         ))}

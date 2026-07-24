@@ -117,7 +117,7 @@ export default function App() {
           Gram Stain <span className="header__accent">Classifier</span>
         </h1>
         <p className="header__subtitle">
-          Cellpose 2.0 segmentation + 5-vote per-cell classification
+          Omnipose segmentation (round + elongated bacteria) + 5-vote per-cell classification
         </p>
       </header>
 
@@ -134,10 +134,10 @@ export default function App() {
 
         <button className="analyze-btn" onClick={handleAnalyze} disabled={!canAnalyze || loading}>
           {loading
-            ? "Đang phân tích…"
+            ? "Analyzing…"
             : mode === "single"
-            ? "Phân tích ảnh"
-            : `Phân tích ${batchFiles.length || ""} ảnh`}
+            ? "Analyze image"
+            : `Analyze ${batchFiles.length || ""} images`}
         </button>
 
         {error && <p className="error-msg">{error}</p>}
@@ -159,7 +159,7 @@ export default function App() {
       {selected && <ImageDetailModal result={selected} onClose={() => setSelected(null)} />}
 
       <footer className="footer">
-        Backend: Cellpose 2.0 (cyto2) + 5-vote classifier · hosted on Hugging Face Spaces
+        Backend: Omnipose (bact_phase_affinity) + 5-vote classifier · hosted on Hugging Face Spaces
       </footer>
     </div>
   );

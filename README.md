@@ -1,11 +1,12 @@
 # Automated Gram Classification System
 
-Cellpose 2.0 segmentation + 5-vote classifier, wrapped in a web app.
+Omnipose segmentation (handles both round and elongated/chained
+bacteria in one model) + 5-vote classifier, wrapped in a web app.
 Supports a single image or a whole folder of images, exports the full
 90-variable profile to Excel, and lets you click any result to inspect
-its original / segmentation / Gram-classification overlay images.
+a combined original / segmentation / Gram-classification figure.
 
-- `backend/` — FastAPI service (Cellpose + classifier + Excel export),
+- `backend/` — FastAPI service (Omnipose + classifier + Excel export),
   deployed as a Hugging Face Space using the Docker SDK.
 - `frontend/` — React (Vite) app. Choose one image or an entire folder,
   get back per-cell counts, classification, and the full 90-variable
@@ -18,11 +19,12 @@ its original / segmentation / Gram-classification overlay images.
   upload panel between a single drag-and-drop image and a folder
   picker (`webkitdirectory`) that picks up every JPG/PNG/TIFF inside.
 - **Per-image visual inspection** — every processed image (single or
-  batch) returns three overlay images: the original, the segmentation
-  contours, and the Gram-classification contours (colored by vote
-  outcome). In batch mode, click any card in the results grid to open
-  these in a modal alongside that image's own 90-variable breakdown.
-- **Excel export (90 variables)** — a "Xuất Excel" button (single
+  batch) returns one combined figure: original, segmentation contours,
+  and Gram-classification contours (colored by vote outcome) side by
+  side, labeled, in a single PNG. In batch mode, click any card in the
+  results grid to open it in a modal alongside that image's own
+  90-variable breakdown.
+- **Excel export (90 variables)** — an "Export Excel" button (single
   image or whole batch) calls `POST /export-excel`, which returns a
   multi-sheet workbook (`Full_Data`, `SV1_Intensity_30vars`,
   `SV2_CellWall_30vars`, `SV3_Morphology_30vars`, `Background_Info`,
@@ -35,9 +37,9 @@ its original / segmentation / Gram-classification overlay images.
 ```
  ┌──────────────┐   POST /analyze            ┌───────────────────────┐
  │   React app   │   POST /analyze-batch      │   FastAPI (HF Space)  │
- │ (GitHub Pages │ ─────────────────────────▶ │  Cellpose 2.0 +       │
+ │ (GitHub Pages │ ─────────────────────────▶ │  Omnipose +           │
  │  / Netlify)   │   image file(s)             │  5-vote classifier    │
- │               │ ◀───────────────────────── │  + overlay images     │
+ │               │ ◀───────────────────────── │  + combined figure    │
  │               │   JSON result(s)            └───────────────────────┘
  │               │
  │               │   POST /export-excel  (features already in hand)
@@ -78,9 +80,9 @@ you publish to GitHub Pages / Vercel / Netlify.
 
 ## API endpoints
 
-- `GET /` — health check + config version + any open validation caveats.
+- `GET /` — health check + config version.
 - `POST /analyze` — one image (`multipart/form-data`, field `file`) →
-  one result (counts, 90-variable `features`, overlay `images`).
+  one result (counts, 90-variable `features`, `combined_image`).
 - `POST /analyze-batch` — several images (`multipart/form-data`, field
   `files`, repeated) → `{ count, results: [...] }`, one entry per image
   in the same shape as `/analyze`. Non-image files picked up by the
@@ -91,6 +93,12 @@ you publish to GitHub Pages / Vercel / Netlify.
 ## Classifier parameters
 
 Current parameters (`backend/classifier_config.json`) reflect the
-corrected grid-search optimum — see `known_open_items` in that file
-for what's still pending re-validation (Phase 2 E. coli specificity
-test, Table 2 stratification) before these are final for publication.
+corrected grid-search optimum.
+
+## Segmentation backend
+
+Segmentation runs on [Omnipose](https://omnipose.readthedocs.io/)
+(`bact_phase_affinity`, fallback `bact_phase_omni`), which handles
+both round and elongated/chained bacteria in one model. The 5-vote
+Gram classifier reads per-cell average color only, independent of
+which model produced the mask.

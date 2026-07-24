@@ -3,8 +3,13 @@ FastAPI service: upload one Gram-stained bright-field image (or a
 whole folder of them), get back the full ~90-variable per-image
 profile (SV1 intensity/staining, SV2 cell-wall imaging proxies, SV3
 morphology + 5-vote Gram classification), a per-cell breakdown, and
-three overlay images (original / segmentation / Gram classification)
-for visual inspection.
+one combined figure (original / segmentation / Gram classification
+side by side) for visual inspection.
+
+Segmentation backend: Omnipose (bact_phase_affinity, fallback
+bact_phase_omni) -- handles both round and elongated/chained bacteria
+in one model. See pipeline/segmentation.py for why this replaced the
+earlier Cellpose 2.0 (cyto2) backend.
 
 Endpoints:
   GET  /              health check
@@ -33,7 +38,7 @@ from pipeline.excel_export import build_excel_workbook
 
 app = FastAPI(
     title="Automated Gram Classification API",
-    description="Cellpose 2.0 segmentation + 5-vote Gram classifier + full 90-variable feature extraction",
+    description="Omnipose segmentation (round + elongated bacteria) + 5-vote Gram classifier + full 90-variable feature extraction",
     version=cfg.CONFIG_VERSION,
 )
 
@@ -69,7 +74,6 @@ def health():
     return {
         "status": "ok",
         "config_version": cfg.CONFIG_VERSION,
-        "known_open_items": cfg.KNOWN_OPEN_ITEMS,
     }
 
 

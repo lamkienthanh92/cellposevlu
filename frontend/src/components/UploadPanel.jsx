@@ -34,7 +34,7 @@ export default function UploadPanel({
           onClick={() => onModeChange("single")}
           disabled={disabled}
         >
-          Một ảnh
+          Single image
         </button>
         <button
           type="button"
@@ -42,7 +42,7 @@ export default function UploadPanel({
           onClick={() => onModeChange("batch")}
           disabled={disabled}
         >
-          Cả thư mục (batch)
+          Folder (batch)
         </button>
       </div>
 
@@ -96,10 +96,10 @@ export default function UploadPanel({
           />
           <div className="dropzone__empty">
             <span className="dropzone__label">
-              {fileCount > 0 ? `${fileCount} ảnh đã chọn` : "Click để chọn một thư mục ảnh"}
+              {fileCount > 0 ? `${fileCount} images selected` : "Click to choose a folder of images"}
             </span>
             <span className="dropzone__hint">
-              Toàn bộ JPG/PNG/TIFF trong thư mục sẽ được xử lý (chọn lại để đổi thư mục)
+              Every JPG/PNG/TIFF in the folder will be processed (click again to pick a different folder)
             </span>
           </div>
         </div>

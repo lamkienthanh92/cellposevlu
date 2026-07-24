@@ -409,37 +409,17 @@ body {
   color: var(--violet);
 }
 
-.image-viewer__grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+.image-viewer__figure {
   margin-top: 12px;
-}
-
-.image-viewer__grid figure {
-  margin: 0;
-}
-
-.image-viewer__grid img {
-  width: 100%;
-  display: block;
   border-radius: 6px;
+  overflow: hidden;
   border: 1px solid var(--panel-border);
   background: #000;
 }
 
-.image-viewer__grid figcaption {
-  margin-top: 4px;
-  text-align: center;
-  font-size: 0.68rem;
-  color: var(--text-muted);
-  font-family: "IBM Plex Mono", monospace;
-}
-
-@media (max-width: 480px) {
-  .image-viewer__grid {
-    grid-template-columns: 1fr;
-  }
+.image-viewer__figure img {
+  width: 100%;
+  display: block;
 }
 
 /* ---------- feature-groups header actions ---------- */
@@ -508,11 +488,11 @@ body {
 
 .batch-card__thumb {
   width: 100%;
-  aspect-ratio: 1 / 1;
-  object-fit: cover;
+  height: 70px;
+  object-fit: contain;
   border-radius: 5px;
   display: block;
-  background: #000;
+  background: var(--panel);
 }
 
 .batch-card__thumb--empty {
@@ -599,30 +579,6 @@ body {
 .modal__close:hover {
   border-color: var(--pink);
   color: var(--pink);
-}
-
-.modal__tabs {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 12px;
-}
-
-.modal__tab {
-  flex: 1;
-  background: none;
-  border: 1px solid var(--panel-border);
-  color: var(--text-muted);
-  border-radius: 6px;
-  padding: 7px;
-  font-size: 0.75rem;
-  font-family: "IBM Plex Mono", monospace;
-  cursor: pointer;
-}
-
-.modal__tab--active {
-  border-color: var(--violet);
-  color: var(--violet);
-  background: rgba(122, 122, 209, 0.08);
 }
 
 .modal__image-wrap {

@@ -12,14 +12,14 @@ import numpy as np
 from .segmentation import preprocess_image, detect_background, segment_image, resize_if_large
 from .classifier import classify_gram_cell
 from .features import compute_all_features
-from .visualize import build_result_images
+from .visualize import build_combined_figure
 
 
 def analyze_one_image(img_rgb: np.ndarray, filename: str) -> dict:
     t0 = time.time()
     img = resize_if_large(img_rgb)
-    img_pre, gray = preprocess_image(img)
-    masks, valid_regions = segment_image(img_pre)
+    _img_pre, gray = preprocess_image(img)
+    masks, valid_regions = segment_image(gray)
 
     if not valid_regions:
         return {
@@ -58,7 +58,7 @@ def analyze_one_image(img_rgb: np.ndarray, filename: str) -> dict:
         })
 
     total = len(valid_regions)
-    images = build_result_images(img, masks, valid_regions, cell_labels)
+    combined_image = build_combined_figure(img, masks, valid_regions, cell_labels)
 
     return {
         "filename": filename,
@@ -67,6 +67,6 @@ def analyze_one_image(img_rgb: np.ndarray, filename: str) -> dict:
         "percentages": {k: round(100 * v / total, 1) for k, v in counts.items()},
         "cells": cells,
         "features": features,
-        "images": images,
+        "combined_image": combined_image,
         "processing_time_seconds": round(time.time() - t0, 2),
     }
